@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'category.dart';
+import 'package:flutter_sandbox/category.dart';
+import 'package:flutter_sandbox/unit.dart';
 
 final _backgroundColor = Colors.green[100];
 
@@ -45,6 +46,17 @@ class CategoryScreen extends StatelessWidget {
     );
   }
 
+  /// Returns a list of mock [Unit]s.
+  List<Unit> _retrieveUnitList(String categoryName) {
+    return List.generate(10, (int i) {
+      i += 1;
+      return Unit(
+        name: '$categoryName Unit $i',
+        conversion: i.toDouble(),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = <Category>[];
@@ -54,6 +66,7 @@ class CategoryScreen extends StatelessWidget {
         name: _categoryNames[i],
         color: _baseColors[i],
         iconLocation: Icons.hot_tub,
+        units: _retrieveUnitList(_categoryNames[i]),
       ));
     }
 
