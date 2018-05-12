@@ -77,6 +77,9 @@ class _ConverterScreenState extends State<ConverterScreen> {
       _fromValue = widget.category.units[0];
       _toValue = widget.category.units[1];
     });
+    if (_inputValue != null) {
+      _updateConversion();
+    }
   }
 
   /// Clean up conversion; trim trailing zeros, e.g. 5.500 -> 5.5, 10.0 -> 10
