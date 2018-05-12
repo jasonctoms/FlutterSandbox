@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sandbox/category.dart';
-import 'package:flutter_sandbox/unit.dart';
 
-final _backgroundColor = Colors.green[100];
+import 'package:flutter_sandbox/backdrop.dart';
+import 'package:flutter_sandbox/category.dart';
+import 'package:flutter_sandbox/category_tile.dart';
+import 'converter_screen.dart';
+import 'package:flutter_sandbox/unit.dart';
 
 /// Category Screen.
 ///
@@ -16,6 +18,8 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
+  Category _defaultCategory;
+  Category _currentCategory;
   final _categories = <Category>[];
 
   static const _categoryNames = <String>[
@@ -69,13 +73,24 @@ class _CategoryScreenState extends State<CategoryScreen> {
   void initState() {
     super.initState();
     for (var i = 0; i < _categoryNames.length; i++) {
-      _categories.add(Category(
+      var category = Category(
         name: _categoryNames[i],
         color: _baseColors[i],
         iconLocation: Icons.hot_tub,
         units: _retrieveUnitList(_categoryNames[i]),
-      ));
+      );
+      if (i == 0) {
+        _defaultCategory = category;
+      }
+      _categories.add(category);
     }
+  }
+
+  /// Function to call when a [Category] is tapped.
+  void _onCategoryTap(Category category) {
+    setState(() {
+      _currentCategory = category;
+    });
   }
 
   /// Makes the correct number of rows for the list view.
@@ -83,7 +98,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
   /// For portrait, we use a [ListView].
   Widget _buildCategoryWidgets() {
     return ListView.builder(
-      itemBuilder: (BuildContext context, int index) => _categories[index],
+      itemBuilder: (BuildContext context, int index) {
+        return CategoryTile(
+          category: _categories[index],
+          onTap: _onCategoryTap,
+        );
+      },
       itemCount: _categories.length,
     );
   }
@@ -101,28 +121,24 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final listView = Container(
-      color: _backgroundColor,
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
+    final listView = Padding(
+      padding: EdgeInsets.only(
+        left: 8.0,
+        right: 8.0,
+        bottom: 48.0,
+      ),
       child: _buildCategoryWidgets(),
     );
 
-    final appBar = AppBar(
-      elevation: 0.0,
-      title: Text(
-        'Unit Converter',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 30.0,
-        ),
-      ),
-      centerTitle: true,
-      backgroundColor: _backgroundColor,
-    );
-
-    return Scaffold(
-      appBar: appBar,
-      body: listView,
+    return Backdrop(
+      currentCategory:
+      _currentCategory == null ? _defaultCategory : _currentCategory,
+      frontPanel: _currentCategory == null
+          ? ConverterScreen(category: _defaultCategory)
+          : ConverterScreen(category: _currentCategory),
+      backPanel: listView,
+      frontTitle: Text('Unit Converter'),
+      backTitle: Text('Select a Category'),
     );
   }
 }
