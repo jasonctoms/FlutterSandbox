@@ -1,10 +1,12 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
+import 'package:flutter_sandbox/api.dart';
 import 'package:flutter_sandbox/category.dart';
 import 'package:flutter_sandbox/unit.dart';
 
@@ -98,11 +100,24 @@ class _ConverterScreenState extends State<ConverterScreen> {
     return outputNum;
   }
 
-  void _updateConversion() {
-    setState(() {
-      _convertedValue =
-          _format(_inputValue * (_toValue.conversion / _fromValue.conversion));
-    });
+  Future<void> _updateConversion() async {
+    // Our API has a handy convert function, so we can use that for
+    // the Currency [Category]
+    if (widget.category.name == apiCategory['name']) {
+      final api = Api();
+      final conversion = await api.convert(apiCategory['route'],
+          _inputValue.toString(), _fromValue.name, _toValue.name);
+
+      setState(() {
+        _convertedValue = _format(conversion);
+      });
+    } else {
+      // For the static units, we do the conversion ourselves
+      setState(() {
+        _convertedValue = _format(
+            _inputValue * (_toValue.conversion / _fromValue.conversion));
+      });
+    }
   }
 
   void _updateInputValue(String input) {
@@ -127,7 +142,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
 
   Unit _getUnit(String unitName) {
     return widget.category.units.firstWhere(
-          (Unit unit) {
+      (Unit unit) {
         return unit.name == unitName;
       },
       orElse: null,
@@ -167,8 +182,8 @@ class _ConverterScreenState extends State<ConverterScreen> {
       child: Theme(
         // This sets the color of the [DropdownMenuItem]
         data: Theme.of(context).copyWith(
-          canvasColor: Colors.grey[50],
-        ),
+              canvasColor: Colors.grey[50],
+            ),
         child: DropdownButtonHideUnderline(
           child: ButtonTheme(
             alignedDropdown: true,
